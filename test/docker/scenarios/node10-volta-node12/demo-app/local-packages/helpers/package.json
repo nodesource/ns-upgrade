@@ -1,0 +1,6 @@
+{
+  "name": "local-helpers",
+  "version": "1.0.0",
+  "description": "Local helper utilities for testing file: dependencies",
+  "main": "index.js"
+}

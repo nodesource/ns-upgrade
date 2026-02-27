@@ -1,0 +1,19 @@
+{
+  "name": "demo-app-node13",
+  "version": "1.0.0",
+  "description": "Demo app for testing ns-upgrade with Node.js 13",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"No tests specified\""
+  },
+  "dependencies": {
+    "express": "4.17.1",
+    "lodash": "4.17.19",
+    "axios": "0.21.1",
+    "moment": "2.29.1"
+  },
+  "engines": {
+    "node": "13.x"
+  }
+}

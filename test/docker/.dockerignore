@@ -1,0 +1,39 @@
+# Docker ignore file for ns-upgrade testing
+
+# Results directory
+results/
+
+# Node modules (will be installed in container)
+node_modules/
+*/node_modules/
+**/node_modules/
+
+# Coverage and test outputs
+coverage/
+.nyc_output/
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Documentation (not needed in images)
+*.md
+!README.md
+
+# CI/CD
+.github/

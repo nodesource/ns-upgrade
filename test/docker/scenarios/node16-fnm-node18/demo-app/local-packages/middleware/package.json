@@ -1,0 +1,6 @@
+{
+  "name": "local-middleware",
+  "version": "1.0.0",
+  "description": "Local middleware for testing file: dependencies",
+  "main": "index.js"
+}

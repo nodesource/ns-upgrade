@@ -1,0 +1,27 @@
+{
+  "name": "demo-hapi-api",
+  "version": "1.0.0",
+  "description": "Hapi.js REST API for testing ns-upgrade with NVM",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "test": "echo \"No tests yet\""
+  },
+  "dependencies": {
+    "@hapi/hapi": "18.4.2",
+    "@hapi/joi": "15.1.1",
+    "@hapi/boom": "7.4.11",
+    "lodash": "4.17.15",
+    "moment": "2.24.0",
+    "axios": "0.19.2",
+    "uuid": "3.4.0",
+    "local-plugins": "file:./local-packages/plugins"
+  },
+  "devDependencies": {
+    "nodemon": "1.19.4"
+  },
+  "engines": {
+    "node": ">=12.0.0"
+  }
+}

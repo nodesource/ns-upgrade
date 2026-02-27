@@ -1,0 +1,30 @@
+{
+  "name": "demo-cli-tool",
+  "version": "1.0.0",
+  "description": "CLI tool for testing ns-upgrade with Volta",
+  "main": "index.js",
+  "bin": {
+    "demo-cli": "./bin/cli.js"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "cli": "node bin/cli.js"
+  },
+  "dependencies": {
+    "commander": "3.0.2",
+    "chalk": "2.4.2",
+    "inquirer": "6.5.2",
+    "ora": "github:sindresorhus/ora#v3.4.0",
+    "figlet": "1.5.0",
+    "local-helpers": "file:./local-packages/helpers"
+  },
+  "devDependencies": {
+    "pkg": "4.4.9"
+  },
+  "engines": {
+    "node": ">=10.0.0"
+  },
+  "volta": {
+    "node": "12.22.12"
+  }
+}

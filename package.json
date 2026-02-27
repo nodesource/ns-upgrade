@@ -1,0 +1,58 @@
+{
+  "name": "@nodesource/upgrade",
+  "version": "1.0.0",
+  "description": "Node.js Upgrade Advisor - Analyze your Node.js project for upgrade readiness",
+  "main": "lib/index.js",
+  "bin": {
+    "@nodesource/upgrade": "bin/cli.js",
+    "nodesource-upgrade": "bin/cli.js"
+  },
+  "scripts": {
+    "test": "nyc node --test test/**/*.test.js",
+    "lint": "standard",
+    "lint:fix": "standard --fix",
+    "dev": "node --watch bin/cli.js"
+  },
+  "keywords": [
+    "nodejs",
+    "upgrade",
+    "discovery",
+    "cli"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nodesource/ns-upgrade.git"
+  },
+  "author": "NodeSource",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "packageManager": "pnpm@10.22.0",
+  "files": [
+    "bin",
+    "lib",
+    "assets",
+    "README.md",
+    "LICENSE"
+  ],
+  "dependencies": {
+    "@typescript-eslint/parser": "^8.56.1",
+    "colorette": "^2.0.20",
+    "eslint": "^9.39.1",
+    "eslint-plugin-n": "^17.24.0",
+    "glob": "^11.0.3",
+    "inquirer": "^12.11.0",
+    "marked": "^15.0.12",
+    "marked-terminal": "^7.3.0",
+    "ora": "^9.3.0",
+    "tar": "^7.5.9",
+    "typescript": "^5.0.0",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "nyc": "^17.1.0",
+    "sinon": "^21.0.1",
+    "standard": "^17.1.2"
+  }
+}

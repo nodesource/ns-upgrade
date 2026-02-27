@@ -1,0 +1,7 @@
+{
+  "name": "local-models",
+  "version": "1.0.0",
+  "description": "Local data models for testing file: dependencies",
+  "type": "module",
+  "main": "index.js"
+}

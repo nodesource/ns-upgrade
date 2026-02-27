@@ -1,0 +1,6 @@
+{
+  "name": "local-utils",
+  "version": "1.0.0",
+  "description": "Local utility package for testing file: dependencies",
+  "main": "index.js"
+}

@@ -1,0 +1,6 @@
+{
+  "name": "local-plugins",
+  "version": "1.0.0",
+  "description": "Local Hapi.js plugins for testing file: dependencies",
+  "main": "index.js"
+}

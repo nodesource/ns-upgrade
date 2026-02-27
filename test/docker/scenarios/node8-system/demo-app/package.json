@@ -1,0 +1,24 @@
+{
+  "name": "demo-express3-app",
+  "version": "1.0.0",
+  "description": "Legacy Express 3.x application for testing ns-upgrade",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "mocha"
+  },
+  "dependencies": {
+    "express": "3.21.2",
+    "lodash": "3.10.1",
+    "moment": "2.10.6",
+    "request": "2.88.0",
+    "local-utils": "file:./local-packages/utils"
+  },
+  "devDependencies": {
+    "mocha": "3.5.0",
+    "eslint": "github:eslint/eslint#v4.19.1"
+  },
+  "engines": {
+    "node": ">=8.0.0"
+  }
+}

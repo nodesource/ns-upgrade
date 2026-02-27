@@ -1,0 +1,62 @@
+FROM ubuntu:20.04
+
+# Prevent interactive prompts during package installation
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install essential tools and dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    wget \
+    git \
+    build-essential \
+    python3 \
+    ca-certificates \
+    gnupg \
+    lsb-release \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create workspace directory
+WORKDIR /workspace
+
+# Install Node 22 for ns-upgrade CLI (required for CLI execution)
+RUN mkdir -p /opt/node22 && \
+    curl -fsSL https://nodejs.org/dist/v22.21.1/node-v22.21.1-linux-x64.tar.xz -o /tmp/node22.tar.xz && \
+    tar -xJf /tmp/node22.tar.xz -C /opt/node22 --strip-components=1 && \
+    rm /tmp/node22.tar.xz
+
+# Verify Node 22 installation
+RUN /opt/node22/bin/node --version && \
+    /opt/node22/bin/node /opt/node22/bin/npm --version && \
+    echo "✓ Node 22 installed at /opt/node22"
+
+# Copy ns-upgrade project files
+COPY package.json pnpm-lock.yaml* /workspace/ns-upgrade/
+COPY bin /workspace/ns-upgrade/bin
+COPY lib /workspace/ns-upgrade/lib
+COPY assets /workspace/ns-upgrade/assets
+
+# Install ns-upgrade dependencies with Node 22
+WORKDIR /workspace/ns-upgrade
+RUN /opt/node22/bin/node /opt/node22/bin/npm install
+
+# Verify ns-upgrade CLI is accessible
+RUN /opt/node22/bin/node /workspace/ns-upgrade/bin/cli.js --version || \
+    echo "✓ ns-upgrade CLI available"
+
+# Copy shared validation scripts
+RUN mkdir -p /workspace/scripts
+COPY test/docker/scripts/validate-output.js /workspace/scripts/validate-output.js
+COPY test/docker/scripts/info.sh /workspace/info.sh
+COPY test/docker/scripts/validate.sh /workspace/validate-results.sh
+RUN chmod +x /workspace/scripts/validate-output.js \
+    /workspace/info.sh \
+    /workspace/validate-results.sh
+
+# Reset to workspace root
+WORKDIR /workspace
+
+# Add labels for metadata
+LABEL maintainer="NodeSource ns-upgrade team"
+LABEL description="Base image for ns-upgrade Docker testing scenarios"
+LABEL version="2.0.0"
+LABEL node22.version="22.21.1"

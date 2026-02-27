@@ -1,0 +1,29 @@
+{
+  "name": "demo-modern-app",
+  "version": "1.0.0",
+  "description": "Modern ESM application for testing ns-upgrade",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js",
+    "test": "vitest",
+    "build": "esbuild index.js --bundle --outfile=dist/bundle.js"
+  },
+  "dependencies": {
+    "fastify": "4.10.2",
+    "@prisma/client": "4.8.0",
+    "zod": "3.20.2",
+    "dotenv": "16.0.3",
+    "local-models": "file:./local-packages/models"
+  },
+  "devDependencies": {
+    "vitest": "0.28.5",
+    "typescript": "4.9.4",
+    "esbuild": "github:evanw/esbuild#v0.17.0",
+    "@types/node": "18.11.18"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
