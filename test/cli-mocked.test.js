@@ -24,8 +24,8 @@ describe('CLI - Argument Parsing', () => {
     const content = fs.readFileSync(cliPath, 'utf-8')
 
     // Check version validation logic
-    assert.ok(content.includes('majorVersion < 20'), 'Should check Node.js version')
-    assert.ok(content.includes('requires Node.js 20 or higher'), 'Should have error message')
+    assert.ok(content.includes('majorVersion < 22'), 'Should check Node.js version')
+    assert.ok(content.includes('requires Node.js 22 or higher'), 'Should have error message')
   })
 })
 

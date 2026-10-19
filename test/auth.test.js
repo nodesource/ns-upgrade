@@ -149,7 +149,15 @@ describe('auth - loopback login', () => {
     assert.strictEqual(res.status, 200)
     assert.match(res.headers.get('content-type'), /text\/html/)
     assert.ok(res.headers.get('content-security-policy'))
-    assert.match(await res.text(), /Authentication successful/)
+    const page = await res.text()
+    assert.match(page, /Authentication successful/)
+    assert.ok(page.includes('<svg'), 'branded page should inline the logo svg')
+    assert.ok(page.includes('https://nodesource.com/icon.ico'), 'favicon link should be present')
+    const externalRefs = page.match(/https?:\/\/[^"' )]+/g) || []
+    const allowedExternalRefs = new Set(['https://nodesource.com/icon.ico', 'http://www.w3.org/2000/svg'])
+    for (const ref of externalRefs) {
+      assert.ok(allowedExternalRefs.has(ref), `unexpected external reference in the page: ${ref}`)
+    }
 
     assert.deepStrictEqual(session, {
       token: 'tok-123',
