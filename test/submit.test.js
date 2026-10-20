@@ -34,6 +34,12 @@ function captureConsoleLog () {
   return lines
 }
 
+function captureConsoleError () {
+  const lines = []
+  mock.method(console, 'error', (...args) => { lines.push(args.join(' ')) })
+  return lines
+}
+
 describe('Submit - Display Raw JSON', () => {
   test('displays JSON without errors', () => {
     const sampleData = {
@@ -313,6 +319,85 @@ describe('Submit - submitReport', () => {
     ])
     assert.ok(!logged.includes('tok-secret-9'), 'token must not be logged')
     assert.ok(!lines.join('\n').includes('tok-secret-9'), 'token must not be printed')
+  })
+
+  test('S8: retries the submit on a transient network failure and succeeds', async () => {
+    let calls = 0
+    mock.method(globalThis, 'fetch', async () => {
+      calls++
+      if (calls === 1) {
+        const error = new TypeError('fetch failed')
+        error.cause = { code: 'UND_ERR_CONNECT_TIMEOUT' }
+        throw error
+      }
+      return jsonResponse(200, { status: 'queued', message: 'Scan received' })
+    })
+    captureConsoleLog()
+
+    const result = await submitReport(reportData, userInfo, { token: 'tok' }, silentLogger(), { retryDelayMs: 0 })
+
+    assert.strictEqual(calls, 2)
+    assert.strictEqual(result.status, 'queued')
+  })
+
+  test('S14: gives up after the maximum attempts with an actionable network error', async () => {
+    let calls = 0
+    mock.method(globalThis, 'fetch', async () => {
+      calls++
+      const error = new TypeError('fetch failed')
+      error.cause = { code: 'ENOTFOUND' }
+      throw error
+    })
+    const errors = captureConsoleError()
+    captureConsoleLog()
+
+    await assert.rejects(
+      submitReport(reportData, userInfo, { token: 'tok' }, silentLogger(), { retryDelayMs: 0 })
+    )
+
+    assert.strictEqual(calls, 3)
+    const output = errors.join('\n')
+    assert.match(output, /Network error/)
+    assert.match(output, /https:\/\/upgrade\.nodesource\.io/)
+    assert.match(output, /ENOTFOUND/)
+    assert.match(output, /DNS lookup failed/)
+  })
+
+  test('S15: a connection timeout is treated as a network error and retried', async () => {
+    let calls = 0
+    mock.method(globalThis, 'fetch', async () => {
+      calls++
+      const error = new Error('The operation was aborted due to timeout')
+      error.name = 'TimeoutError'
+      throw error
+    })
+    const errors = captureConsoleError()
+    captureConsoleLog()
+
+    await assert.rejects(
+      submitReport(reportData, userInfo, { token: 'tok' }, silentLogger(), { retryDelayMs: 0, maxAttempts: 2 })
+    )
+
+    assert.strictEqual(calls, 2)
+    assert.match(errors.join('\n'), /TimeoutError/)
+    assert.match(errors.join('\n'), /timed out/)
+  })
+
+  test('S16: non-network errors are not retried', async () => {
+    let calls = 0
+    mock.method(globalThis, 'fetch', async () => {
+      calls++
+      throw new Error('boom')
+    })
+    captureConsoleLog()
+    captureConsoleError()
+
+    await assert.rejects(
+      submitReport(reportData, userInfo, { token: 'tok' }, silentLogger(), { retryDelayMs: 0 }),
+      /boom/
+    )
+
+    assert.strictEqual(calls, 1)
   })
 })
 
