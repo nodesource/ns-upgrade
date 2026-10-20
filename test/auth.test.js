@@ -4,7 +4,7 @@ const net = require('node:net')
 const fs = require('node:fs')
 const { mock } = require('node:test')
 
-const { buildSignInUrl, login } = require('../lib/auth')
+const { buildSignInUrl, buildBrowserLaunch, login } = require('../lib/auth')
 
 const MIN_PORT = 8765
 const MAX_PORT = 8770
@@ -111,6 +111,31 @@ describe('auth - buildSignInUrl', () => {
       buildSignInUrl('https://accounts.example/some/path', 8766, 's1'),
       'https://accounts.example/sign-in?extension=nsolid-plugin&port=8766&state=s1'
     )
+  })
+})
+
+describe('auth - browser launch', () => {
+  const url = 'https://staging.accounts.nodesource.com/sign-in?extension=nsolid-plugin&port=8765&state=abc'
+
+  test('B1: on windows the url is quoted and passed verbatim so cmd does not split on &', () => {
+    const { command, args, options } = buildBrowserLaunch('win32', url)
+    assert.strictEqual(command, 'cmd')
+    assert.deepStrictEqual(args, ['/c', 'start', '""', `"${url}"`])
+    assert.strictEqual(options.windowsVerbatimArguments, true)
+  })
+
+  test('B2: on darwin the url is passed unchanged', () => {
+    const { command, args, options } = buildBrowserLaunch('darwin', url)
+    assert.strictEqual(command, 'open')
+    assert.deepStrictEqual(args, [url])
+    assert.deepStrictEqual(options, {})
+  })
+
+  test('B3: on linux the url is passed unchanged', () => {
+    const { command, args, options } = buildBrowserLaunch('linux', url)
+    assert.strictEqual(command, 'xdg-open')
+    assert.deepStrictEqual(args, [url])
+    assert.deepStrictEqual(options, {})
   })
 })
 
