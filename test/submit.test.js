@@ -236,14 +236,16 @@ describe('Submit - submitReport', () => {
       return jsonResponse(200, { status: 'queued', message: 'Scan received' })
     })
     captureConsoleLog()
-    const relogin = mock.fn(async () => ({ token: 'tok-new' }))
+    const relogin = mock.fn(async () => ({ token: 'tok-new', consoleId: 'org-2' }))
 
-    const result = await submitReport(reportData, userInfo, { token: 'tok-old' }, silentLogger(), { relogin })
+    const result = await submitReport(reportData, userInfo, { token: 'tok-old', consoleId: 'org-1' }, silentLogger(), { relogin })
 
     assert.strictEqual(relogin.mock.callCount(), 1)
     assert.strictEqual(calls.length, 2)
     assert.strictEqual(calls[0].Authorization, 'Bearer tok-old')
     assert.strictEqual(calls[1].Authorization, 'Bearer tok-new')
+    assert.strictEqual(calls[0]['x-org-id'], 'org-1')
+    assert.strictEqual(calls[1]['x-org-id'], 'org-2')
     assert.strictEqual(result.status, 'queued')
   })
 
