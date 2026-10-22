@@ -77,6 +77,8 @@ The tool will:
 6. Display the report summary and full JSON content
 7. Optionally submit the report to NodeSource for a free pre-update assessment
 
+> **New to NodeSource?** Signing in happens in your browser. If you don't have an account yet, create one and verify your email address, then open the sign-in link again to continue.
+
 ### CLI Flags
 
 #### `--version` or `-v`

@@ -66,8 +66,8 @@ process.on('SIGTERM', handleSigterm)
 const nodeVersion = process.versions.node
 const majorVersion = parseInt(nodeVersion.split('.')[0], 10)
 
-if (majorVersion < 20) {
-  console.error(red('✖ Error: This tool requires Node.js 20 or higher.'))
+if (majorVersion < 22) {
+  console.error(red('✖ Error: This tool requires Node.js 22 or higher.'))
   console.error(red(`  You are currently running Node.js ${nodeVersion}.`))
   console.error(yellow('  Please run the tool using:'))
   console.error(cyan('  npx -p node@latest -p @nodesource/upgrade nodesource-upgrade'))
@@ -173,7 +173,7 @@ ${yellow('USAGE:')}
 ${yellow('OPTIONS:')}
   ${green('-h, --help')}              Show this help information
   ${green('-v, --version')}           Show version number
-  ${green('-o, --output <path>')}     Output file path (default: upgrade-report.json)
+  ${green('-o, --output <path>')}     Output file path (default: nodesource-discovery.json)
   ${green('-e, --exclude <pattern>')} Exclude patterns (can be used multiple times)
   ${green('--skip-workspace-scan')}   Skip workspace scanning
   ${green('--local-only')}            Only scan local dependencies

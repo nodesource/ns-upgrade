@@ -503,3 +503,67 @@ describe('Detectors - Lockfile Reading', () => {
     assert.ok('content' in result, 'Should have content property')
   })
 })
+
+describe('Detectors - Project version file fallback', () => {
+  const os = require('node:os')
+  const { readProjectVersionFile } = require('../lib/detectors/node-version')
+
+  const withTempDir = (files, fn) => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'nsu-version-file-'))
+    try {
+      for (const [name, content] of Object.entries(files)) {
+        fs.writeFileSync(path.join(dir, name), content)
+      }
+      fn(dir)
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true })
+    }
+  }
+
+  test('reads .nvmrc and returns vX.Y.Z', () => {
+    withTempDir({ '.nvmrc': '14.21.3\n' }, (dir) => {
+      assert.strictEqual(readProjectVersionFile(dir), 'v14.21.3')
+    })
+  })
+
+  test('strips a leading v prefix', () => {
+    withTempDir({ '.nvmrc': 'v20.11.1' }, (dir) => {
+      assert.strictEqual(readProjectVersionFile(dir), 'v20.11.1')
+    })
+  })
+
+  test('prefers .node-version over .nvmrc', () => {
+    withTempDir({ '.node-version': '18.19.0', '.nvmrc': '20.11.1' }, (dir) => {
+      assert.strictEqual(readProjectVersionFile(dir), 'v18.19.0')
+    })
+  })
+
+  test('detectNodeVersion prefers the project version file over an active version manager', () => {
+    withTempDir({ '.nvmrc': '14.21.3' }, (dir) => {
+      const prev = process.cwd()
+      process.chdir(dir)
+      try {
+        const result = detectNodeVersion()
+        assert.strictEqual(result.version, 'v14.21.3')
+        assert.strictEqual(result.versionManager, null)
+      } finally {
+        process.chdir(prev)
+      }
+    })
+  })
+
+  test('accepts major-only and major.minor versions', () => {
+    withTempDir({ '.nvmrc': '22' }, (dir) => {
+      assert.strictEqual(readProjectVersionFile(dir), 'v22')
+    })
+  })
+
+  test('ignores aliases and missing files', () => {
+    withTempDir({}, (dir) => {
+      assert.strictEqual(readProjectVersionFile(dir), null)
+    })
+    withTempDir({ '.nvmrc': 'lts/*' }, (dir) => {
+      assert.strictEqual(readProjectVersionFile(dir), null)
+    })
+  })
+})

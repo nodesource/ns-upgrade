@@ -214,8 +214,8 @@ describe('CLI - Node.js Version Check', () => {
     const cliPath = path.join(__dirname, '..', 'bin', 'cli.js')
     const content = fs.readFileSync(cliPath, 'utf-8')
 
-    assert.ok(content.includes('majorVersion < 20'), 'Should check for Node.js 20+')
-    assert.ok(content.includes('requires Node.js 20 or higher'), 'Should have version requirement message')
+    assert.ok(content.includes('majorVersion < 22'), 'Should check for Node.js 22+')
+    assert.ok(content.includes('requires Node.js 22 or higher'), 'Should have version requirement message')
   })
 })
 
