@@ -9,7 +9,9 @@ const {
   promptSubmit,
   collectUserInfo,
   submitReport,
-  handleSubmission
+  handleSubmission,
+  reportsUrl,
+  reportKeyFromScanId
 } = require('../lib/submit')
 
 const reportData = { schemaVersion: '1.0.0', projectInfo: { name: 'test-project' } }
@@ -304,6 +306,32 @@ describe('Submit - submitReport', () => {
     assert.match(lines.join('\n'), /https:\/\/staging\.accounts\.nodesource\.com\/reports/)
   })
 
+  test('S6: the reports URL includes the report key and the organization', async () => {
+    mock.method(globalThis, 'fetch', async () => jsonResponse(200, { status: 'queued', scanId: 'v2/org-1/3.json' }))
+    const lines = captureConsoleLog()
+
+    await submitReport(reportData, userInfo, { token: 'tok', consoleId: 'org-1' }, silentLogger())
+
+    assert.match(lines.join('\n'), /https:\/\/accounts\.nodesource\.com\/reports\/3\?orgId=org-1/)
+  })
+
+  test('S6: the reports URL uses the organization from re-authentication', async () => {
+    let calls = 0
+    mock.method(globalThis, 'fetch', async () => {
+      calls++
+      if (calls === 1) return jsonResponse(401, { message: 'unauthorized' })
+      return jsonResponse(200, { status: 'queued', scanId: 'v2/org-2/7.json' })
+    })
+    const relogin = mock.fn(async () => ({ token: 'tok-new', consoleId: 'org-2' }))
+    const lines = captureConsoleLog()
+
+    await submitReport(reportData, userInfo, { token: 'tok', consoleId: 'org-1' }, silentLogger(), { relogin })
+
+    const output = lines.join('\n')
+    assert.match(output, /https:\/\/accounts\.nodesource\.com\/reports\/7\?orgId=org-2/)
+    assert.doesNotMatch(output, /orgId=org-1/)
+  })
+
   test('S7: never logs the organization token', async () => {
     mock.method(globalThis, 'fetch', async () => jsonResponse(200, { status: 'queued' }))
     const lines = captureConsoleLog()
@@ -468,5 +496,47 @@ describe('Submit - handleSubmission', () => {
 
     assert.strictEqual(result, false)
     assert.strictEqual(submitCalled, false)
+  })
+})
+
+describe('reportsUrl', () => {
+  const original = process.env.NODESOURCE_ACCOUNTS_URL
+
+  afterEach(() => {
+    if (original === undefined) {
+      delete process.env.NODESOURCE_ACCOUNTS_URL
+    } else {
+      process.env.NODESOURCE_ACCOUNTS_URL = original
+    }
+  })
+
+  test('scopes the link to the report key and the organization', () => {
+    process.env.NODESOURCE_ACCOUNTS_URL = 'https://staging.accounts.nodesource.com'
+    assert.strictEqual(
+      reportsUrl('org-1', '3'),
+      'https://staging.accounts.nodesource.com/reports/3?orgId=org-1'
+    )
+  })
+
+  test('falls back to the reports list when the key is unknown', () => {
+    process.env.NODESOURCE_ACCOUNTS_URL = 'https://accounts.nodesource.com'
+    assert.strictEqual(reportsUrl('org-1'), 'https://accounts.nodesource.com/reports?orgId=org-1')
+    assert.strictEqual(reportsUrl(), 'https://accounts.nodesource.com/reports')
+  })
+})
+
+describe('reportKeyFromScanId', () => {
+  test('extracts the sequence number from a v2 scan id', () => {
+    assert.strictEqual(reportKeyFromScanId('v2/org-1/3.json'), '3')
+  })
+
+  test('returns null for legacy scan ids and missing input', () => {
+    assert.strictEqual(reportKeyFromScanId('scans/2026-10-08/a@b.com-1.json'), null)
+    assert.strictEqual(reportKeyFromScanId(undefined), null)
+  })
+
+  test('returns null for a non numeric or nested sequence', () => {
+    assert.strictEqual(reportKeyFromScanId('v2/org-1/abc.json'), null)
+    assert.strictEqual(reportKeyFromScanId('v2/org-1/3/extra.json'), null)
   })
 })
