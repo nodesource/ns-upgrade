@@ -49,6 +49,8 @@ jobs:
   test:
     name: Tests
     needs: authorize
+    permissions:
+      contents: read
     uses: ./.github/workflows/pnpm-tests.yml
 
   release:
