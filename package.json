@@ -1,6 +1,6 @@
 {
   "name": "@nodesource/upgrade",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Node.js Upgrade Advisor - Analyze your Node.js project for upgrade readiness",
   "main": "lib/index.js",
   "bin": {
