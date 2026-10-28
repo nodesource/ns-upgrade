@@ -95,7 +95,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "22"
-          registry-url: https://registry.npmjs.org/
 
       # Trusted publishing needs npm 11.5.1+ (newer than what Node 22 bundles) and Node 22.14.0+
       - name: Update npm
@@ -112,9 +111,23 @@ jobs:
           git tag -a "v$VERSION" -m "Release v$VERSION"
 
       # Publish before pushing, so a failed publish leaves nothing behind and can simply be rerun.
+      # A version already on npm is skipped, so a rerun after a failed push can still finish.
       # No token: npm exchanges the job's OIDC token with the trusted publisher on npmjs.com
       - name: Publish to npm
-        run: npm publish --access public
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          git fetch origin main
+          if [ "$(git rev-parse origin/main)" != "$(git rev-parse HEAD^)" ]; then
+            echo "::error::main moved during the release; run it again"
+            exit 1
+          fi
+
+          if npm view "@nodesource/upgrade@$VERSION" version >/dev/null 2>&1; then
+            echo "::notice::v$VERSION is already on npm, skipping the publish"
+          else
+            npm publish --access public
+          fi
 
       - name: Push version and tag
         env:
