@@ -1,0 +1,71 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: Version bump
+        required: true
+        default: patch
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+permissions:
+  contents: write
+  id-token: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  authorize:
+    name: Check release permission
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Require main and an admin or maintainer
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          REF: ${{ github.ref }}
+          ACTOR: ${{ github.triggering_actor }}
+        run: |
+          if [ "$REF" != "refs/heads/main" ]; then
+            echo "::error::Releases are cut from main, not $REF"
+            exit 1
+          fi
+
+          ROLE=$(gh api "repos/$REPO/collaborators/$ACTOR/permission" --jq .role_name)
+          case "$ROLE" in
+            admin|maintain) echo "::notice::$ACTOR ($ROLE) may release" ;;
+            *) echo "::error::Only admins and maintainers can release; $ACTOR has the $ROLE role"; exit 1 ;;
+          esac
+
+  test:
+    name: Tests
+    needs: authorize
+    permissions:
+      contents: read
+    uses: ./.github/workflows/pnpm-tests.yml
+
+  release:
+    name: Release
+    needs: test
+    uses: nodesource/ns-shared-workflows/.github/workflows/tag-semver.yml@main
+    with:
+      bump: ${{ inputs.bump }}
+      type: release
+      enable-npm-publish: true
+      npm-package-manager: pnpm
+      node-version: "22"
+      registry-url: https://registry.npmjs.org/
+      commit-version-bump: true
+    secrets: inherit
+    permissions:
+      contents: write
+      id-token: write
